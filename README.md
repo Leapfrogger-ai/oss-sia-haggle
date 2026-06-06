@@ -31,20 +31,31 @@ to improve through inference. Design highlights:
 ## Quickstart
 
 ```bash
-# 1. Install SIA (pick your meta/feedback engine; claude shown)
-pip install 'sia-agent[claude]'
+# 1. Install SIA + the pydantic-ai engine (to run the meta/feedback agent on Nebius)
+pip install 'sia-agent[claude]' 'pydantic-ai>=1.0'
 
 # 2. Build the dataset — downloads the source splits and writes data/ + reference/
 python tasks/craigslist-bargains/build_task.py
 
-# 3. Wire up Nebius (target model) — run from the repo root so providers/ is picked up
-export NEBIUS_API_KEY="..."
+# 3. Keys: copy the template and add your Nebius key
+cp .env.example .env        # then edit .env: NEBIUS_API_KEY=...
 
-# 4. Run the self-improvement loop (target on Nebius)
-sia run --task_dir ./tasks/craigslist-bargains \
+# 4. Run — the wrapper loads .env and runs SIA entirely on Nebius
+./run.sh                    # MAX_GEN / RUN_ID env vars override; extra args pass through
+```
+
+`run.sh` sources `.env` (so keys never need re-exporting) and runs:
+
+```bash
+python -m sia run --task_dir ./tasks/craigslist-bargains \
+        --meta-agent-profile nebius-meta \
         --target-agent-profile gptoss-nebius-target \
         --max_gen 5 --run_id 1
 ```
+
+Verify the Nebius/meta wiring first with `python smoke_meta_nebius.py`. `profiles/nebius-meta.json`
+runs the meta/feedback author on Nebius via `pydantic-ai`; reasoning-heavy models may need a
+larger output cap — set `SIA_META_MAX_TOKENS` (the bundled impl defaults low).
 
 `providers/nebius.json` overrides SIA's bundled Nebius provider with the canonical
 `https://api.tokenfactory.nebius.com/v1/` base URL; it's read from `./providers/` when

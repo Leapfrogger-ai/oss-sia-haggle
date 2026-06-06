@@ -9,6 +9,10 @@ tasks/craigslist-bargains/meta.json
 # raw source cache
 cb_raw/
 
+# secrets — never commit
+.env
+.envrc
+
 # SIA run outputs
 runs/
 
