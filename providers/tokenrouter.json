@@ -1,0 +1,7 @@
+{
+  "provider_id": "tokenrouter",
+  "name": "TokenRouter",
+  "client_kind": "openai",
+  "base_url": "https://api.tokenrouter.com/v1",
+  "api_key_env": "TOKENROUTER_API_KEY"
+}

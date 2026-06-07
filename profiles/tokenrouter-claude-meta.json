@@ -1,0 +1,7 @@
+{
+  "profile_id": "tokenrouter-claude-meta",
+  "name": "Claude Opus 4.8 on TokenRouter (pydantic-ai meta/feedback)",
+  "agent_impl": "pydantic-ai",
+  "model": "anthropic/claude-opus-4.8",
+  "provider_id": "tokenrouter"
+}

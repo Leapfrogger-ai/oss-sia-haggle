@@ -57,6 +57,16 @@ Verify the Nebius/meta wiring first with `python smoke_meta_nebius.py`. `profile
 runs the meta/feedback author on Nebius via `pydantic-ai`; reasoning-heavy models may need a
 larger output cap — set `SIA_META_MAX_TOKENS` (the bundled impl defaults low).
 
+**Meta/feedback author profiles:**
+
+| Profile | Author model | Notes |
+|---|---|---|
+| `nebius-meta` | gpt-oss / Kimi on Nebius | fully on Nebius; open models can be unreliable at the tool-driven code authoring |
+| `tokenrouter-claude-meta` | Claude Opus 4.8 via [TokenRouter](https://www.tokenrouter.com/docs) | reliable authoring through an OpenAI-compatible gateway; set `TOKENROUTER_API_KEY` |
+
+Both keep the **target** model on Nebius. Override `run.sh`'s default by passing
+`--meta-agent-profile tokenrouter-claude-meta` (later flags win), e.g. `./run.sh --meta-agent-profile tokenrouter-claude-meta`.
+
 `providers/nebius.json` overrides SIA's bundled Nebius provider with the canonical
 `https://api.tokenfactory.nebius.com/v1/` base URL; it's read from `./providers/` when
 you run from the repo root (or set `$SIA_PROVIDERS_DIR`). Swap the target profile for
