@@ -11,6 +11,8 @@ import json
 import re
 import subprocess
 import sys
+import time
+import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
@@ -19,7 +21,19 @@ from openai import OpenAI
 ROOT = Path(__file__).resolve().parents[2]
 PUB = ROOT / "tasks/craigslist-bargains/data/public"
 EVAL = PUB / "evaluate.py"
-client = OpenAI(base_url="http://localhost:8000/v1", api_key="dummy")
+BASE_URL = "http://localhost:8000/v1"
+client = OpenAI(base_url=BASE_URL, api_key="dummy")
+
+
+def wait_ready(timeout=180):
+    """Block until vLLM answers /v1/models — avoids scoring connection errors as NO_DEAL."""
+    for _ in range(timeout // 3):
+        try:
+            urllib.request.urlopen(f"{BASE_URL}/models", timeout=3)
+            return True
+        except Exception:  # noqa: BLE001
+            time.sleep(3)
+    return False
 
 SYSTEM = (
     "You predict the outcome of a Craigslist price negotiation between a buyer and a "
@@ -75,6 +89,12 @@ def run(tag, model):
     print(f"[{tag}] model={model}  predicting {len(recs)} ...")
     with ThreadPoolExecutor(max_workers=8) as pool:
         preds = list(pool.map(lambda r: predict_one(model, r), recs))
+    errs = [p for p in preds if "_err" in p]
+    if errs:
+        print(f"  ⚠️  {len(errs)}/{len(preds)} requests ERRORED (scored as NO_DEAL!) "
+              f"— e.g. {errs[0]['_err']}")
+        if len(errs) > len(preds) // 2:
+            sys.exit(f"  ✗ majority of requests failed — is `serve.sh` up? Aborting (results would be bogus).")
     gendir = ROOT / "demo/lightning/runs" / tag
     (gendir / "results").mkdir(parents=True, exist_ok=True)
     (gendir / "results/predictions.json").write_text(json.dumps({"details": preds}))
@@ -85,6 +105,9 @@ def run(tag, model):
 
 
 def main():
+    if not wait_ready():
+        sys.exit("✗ vLLM not reachable at :8000 after 180s — start `serve.sh` first.")
+    print("server ready ✓")
     a, ra = run("A_base", "Qwen/Qwen3-14B")
     b, rb = run("B_tuned", "haggle")
     out = {"A_base_seedprompt": a, "B_tuned_seedprompt": b, "weights_delta_pts": round(b - a, 2),
