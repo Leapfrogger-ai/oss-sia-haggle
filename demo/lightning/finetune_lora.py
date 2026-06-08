@@ -69,9 +69,12 @@ def main():
         learning_rate=2e-4, lr_scheduler_type="cosine", warmup_ratio=0.03,
         bf16=True, gradient_checkpointing=True, gradient_checkpointing_kwargs={"use_reentrant": False},
         optim="paged_adamw_8bit", logging_steps=5, save_strategy="epoch", report_to="none")
+    import inspect
+    # transformers >=4.46 renamed Trainer(tokenizer=) -> processing_class; support both
+    tok_kw = "processing_class" if "processing_class" in inspect.signature(Trainer.__init__).parameters else "tokenizer"
     Trainer(model=model, args=targs, train_dataset=ds["train"], eval_dataset=ds["val"],
             data_collator=DataCollatorForSeq2Seq(tok, padding=True, label_pad_token_id=-100),
-            tokenizer=tok).train()
+            **{tok_kw: tok}).train()
 
     model.save_pretrained(args.out)
     tok.save_pretrained(args.out)
