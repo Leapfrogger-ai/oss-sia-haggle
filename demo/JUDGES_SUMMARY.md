@@ -26,7 +26,7 @@ Same task, we **LoRA fine-tuned a model and served base vs tuned on one endpoint
 |---|---|---|---|
 | **±10% accuracy (served)** | 45.0% | **66.7%** | **+21.7 pts** |
 
-- The fine-tuned **14B beats the *base* 70B (53.3%)** — a small tuned model outran one 5× its size, and it edges the harness-improved gpt-oss (65%). On this task, **weights is the single strongest lever.**
+- **Controlled comparison:** *identical* Qwen3-14B weights, ± the LoRA adapter, served from **one** vLLM endpoint (`model="Qwen/Qwen3-14B"` vs `model="haggle"`). The only variable is the adapter — so the +21.7 pts is attributable *solely* to the fine-tune, not model size or a different machine.
 - Corroborated by the training curve (valid loss 0.69→0.375, train 0.82→0.30 over 2.5M tokens) — but the headline is the *served accuracy*, not the loss.
 - **Where it wins:** the base model over-predicts `NO_DEAL`; the fine-tune recovers deal-price accuracy (e.g. base says `NO_DEAL`, tuned predicts the actual settled price).
 

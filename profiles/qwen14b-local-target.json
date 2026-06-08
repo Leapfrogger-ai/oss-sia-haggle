@@ -1,0 +1,7 @@
+{
+  "profile_id": "qwen14b-local-target",
+  "name": "Qwen3-14B served locally via vLLM (target)",
+  "model": "Qwen/Qwen3-14B",
+  "provider_id": "nebius",
+  "agent_reference": "default"
+}

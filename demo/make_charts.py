@@ -113,5 +113,23 @@ def validated_chart():
     fig.tight_layout(rect=[0, 0, 1, 0.95]); fig.savefig(D / "4_two_axes_validated.png", dpi=160, bbox_inches="tight")
 
 
-harness_chart(); weights_chart(); combined_chart(); validated_chart()
+# ── 5. Standalone served weights bar (A vs B, same 14B base) ────────────────────
+def served_bar():
+    base, tuned = SERVED["base"], SERVED["tuned"]
+    fig, ax = plt.subplots(figsize=(6.4, 4.7))
+    bars = ax.bar(["base\nQwen3-14B", "fine-tuned\n(LoRA)"], [base, tuned],
+                  color=[MUTE, ACCENT], width=0.55)
+    for bar, v in zip(bars, [base, tuned]):
+        ax.text(bar.get_x() + bar.get_width() / 2, v + 0.8, f"{v:.1f}%",
+                ha="center", fontsize=15, fontweight="bold", color=INK)
+    ax.annotate(f"Δ = {tuned - base:+.1f} pts", xy=(1, tuned), xytext=(0.5, max(base, tuned) + 6),
+                ha="center", fontsize=13, color=ACCENT, fontweight="bold")
+    ax.set_ylabel("±10% accuracy on held-out negotiations")
+    ax.set_title("Served base vs fine-tuned — identical Qwen3-14B,\n± the LoRA adapter, one endpoint", fontsize=12.5, fontweight="bold")
+    ax.set_ylim(0, max(base, tuned) + 14); ax.grid(axis="y", alpha=.3)
+    ax.spines[["top", "right"]].set_visible(False)
+    fig.tight_layout(); fig.savefig(D / "5_weights_served.png", dpi=160, bbox_inches="tight")
+
+
+harness_chart(); weights_chart(); combined_chart(); validated_chart(); served_bar()
 print("wrote:", *(p.name for p in sorted(D.glob("*.png"))))

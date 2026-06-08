@@ -61,6 +61,11 @@ with columns `id,prediction` is also accepted.)
 Also write an `agent_execution.json` trajectory log into `--working_dir` so the
 improvement step can see how predictions were made.
 
+> **Model note:** some chat models (e.g. Qwen3) emit hidden `<think>` reasoning that can
+> crowd out your JSON answer within the token budget — yielding empty/`NO_DEAL` predictions.
+> If your target model does this, disable it (pass
+> `extra_body={"chat_template_kwargs": {"enable_thinking": false}}`) and/or raise `max_tokens`.
+
 ## Scoring (`evaluate.py`)
 
 - **Deal example:** correct if your predicted price is within **±10%** of the true

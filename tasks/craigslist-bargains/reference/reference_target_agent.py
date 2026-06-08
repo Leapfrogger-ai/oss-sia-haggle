@@ -82,16 +82,24 @@ def parse_prediction(text: str):
 
 
 def _create(messages):
-    """Call the chat endpoint, preferring JSON mode but degrading gracefully."""
-    try:
-        return client.chat.completions.create(
-            model=MODEL, max_tokens=300, temperature=0.0, messages=messages,
-            response_format={"type": "json_object"},
-        )
-    except Exception:  # noqa: BLE001 — some models reject response_format; retry plain
-        return client.chat.completions.create(
-            model=MODEL, max_tokens=300, temperature=0.0, messages=messages,
-        )
+    """Call the chat endpoint. Prefer JSON mode + no-think (Qwen3 etc. emit <think>
+    reasoning that crowds out the JSON), degrading gracefully for models that reject
+    either option (e.g. gpt-oss rejects response_format)."""
+    base = dict(model=MODEL, max_tokens=512, temperature=0.0, messages=messages)
+    no_think = {"chat_template_kwargs": {"enable_thinking": False}}
+    attempts = (
+        {**base, "response_format": {"type": "json_object"}, "extra_body": no_think},
+        {**base, "extra_body": no_think},
+        {**base, "response_format": {"type": "json_object"}},
+        base,
+    )
+    last_exc = None
+    for kwargs in attempts:
+        try:
+            return client.chat.completions.create(**kwargs)
+        except Exception as exc:  # noqa: BLE001
+            last_exc = exc
+    raise last_exc
 
 
 def predict_one(idx: int, rec: dict) -> dict:

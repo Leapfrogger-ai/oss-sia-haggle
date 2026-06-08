@@ -29,24 +29,42 @@ Cell B  tuned (LoRA)    + seed prompt : YY.Y%
 ```
 …and `demo/lightning/ab_results.json` (with deal/no-deal/MAPE breakdown).
 
-## Optional — full 2×2 / dual hill-climb (Cells C & D)
-Point SIA's harness at the local endpoint. The meta agent still runs on Nebius (GLM-5),
-so this one step needs your Token Factory key:
+## Full 2×2 / dual hill-climb on ONE base (Cells C & D) — keep `serve.sh` running
+
+Run SIA's harness loop against the **live local 14B endpoint**, twice (base vs tuned). SIA
+goes in its **own venv** so its deps can't disturb the carefully-fixed serving/training env.
+
 ```bash
-pip install -e ".[pydantic-ai]"
-export NEBIUS_API_KEY="<your token-factory key>"      # for the GLM-5 META agent only
-export NEBIUS_BASE_URL="http://localhost:8000/v1"     # TARGET agent hits local vLLM
-# base curve (Cells A→C):
+# one-time: SIA in an ISOLATED venv (does NOT touch the cloudspace numpy/torch/vllm env)
+python -m venv ~/sia-venv && source ~/sia-venv/bin/activate
+pip install -q 'sia-agent[pydantic-ai]'
+
+# META (GLM-5) uses Token Factory; TARGET agent is pointed at the local vLLM via env:
+export NEBIUS_API_KEY="<your token-factory key>"      # for the GLM-5 meta agent
+export NEBIUS_BASE_URL="http://localhost:8000/v1"     # target agent hits local vLLM (same box)
+cd ~/oss-sia-haggle
+
+# Cell A→C : harness on the BASE 14B
 SIA_TARGET_MODEL="Qwen/Qwen3-14B" sia run --task_dir ./tasks/craigslist-bargains \
-  --meta-agent-profile glm-meta --target-agent-profile llama70b-nebius-target \
+  --meta-agent-profile glm-meta --target-agent-profile qwen14b-local-target \
   --max_gen 5 --run_id 100 --no-web
-# tuned curve (Cells B→D):
+# Cell B→D : harness on the TUNED 14B (base + adapter, served as "haggle")
 SIA_TARGET_MODEL="haggle" sia run --task_dir ./tasks/craigslist-bargains \
-  --meta-agent-profile glm-meta --target-agent-profile llama70b-nebius-target \
+  --meta-agent-profile glm-meta --target-agent-profile qwen14b-local-target \
   --max_gen 5 --run_id 101 --no-web
+
+# overlay the two curves + print the full 2×2  (uses cloudspace python for matplotlib)
+deactivate
+python demo/lightning/dualclimb_chart.py     # -> demo/lightning/dualclimb.png
 ```
-Overlay `runs/run_100` vs `runs/run_101` → the **dual hill-climb** (both climb = harness;
-tuned curve sits above = weights; top of tuned = compounding D).
+**Reading it:** each curve climbing = the *harness* axis; the tuned curve sitting above the
+base curve = the *weights* axis; the top of the tuned curve (D) = compounding. **All four
+cells are the same Qwen3-14B weights on the same endpoint, scored by the same `evaluate.py`
+on the same 60 negotiations** — only "adapter on/off" and "seed vs SIA-evolved prompt" change.
+
+> Sanity check after each `sia run`: `cat runs/run_100/gen_1/results.json | grep accuracy` —
+> if it's ~25% (the no-deal floor) the target hit `<think>` again; confirm `serve.sh` is up and
+> the env vars are exported in the SIA-venv shell.
 
 ## Optional — live haggle demo
 ```bash
