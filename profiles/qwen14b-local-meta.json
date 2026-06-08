@@ -1,0 +1,7 @@
+{
+  "profile_id": "qwen14b-local-meta",
+  "name": "Qwen3-14B via local vLLM (pydantic-ai meta/feedback) — fully on-box, no Nebius",
+  "agent_impl": "pydantic-ai",
+  "model": "Qwen/Qwen3-14B",
+  "provider_id": "local-vllm"
+}

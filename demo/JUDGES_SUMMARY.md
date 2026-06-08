@@ -27,10 +27,10 @@ Same task, we **LoRA fine-tuned a model and served base vs tuned on one endpoint
 | **±10% accuracy (served)** | 45.0% | **66.7%** | **+21.7 pts** |
 
 - **Controlled comparison:** *identical* Qwen3-14B weights, ± the LoRA adapter, served from **one** vLLM endpoint (`model="Qwen/Qwen3-14B"` vs `model="haggle"`). The only variable is the adapter — so the +21.7 pts is attributable *solely* to the fine-tune, not model size or a different machine.
-- Corroborated by the training curve (valid loss 0.69→0.375, train 0.82→0.30 over 2.5M tokens) — but the headline is the *served accuracy*, not the loss.
+- Corroborated by the fine-tune's own training-loss drop on the L40S (to ~0.1) — but the headline is the *served accuracy*, not the loss.
 - **Where it wins:** the base model over-predicts `NO_DEAL`; the fine-tune recovers deal-price accuracy (e.g. base says `NO_DEAL`, tuned predicts the actual settled price).
 
-> **Infra note:** training ran on **Nebius** (Token Factory fine-tuning API); serving ran on **Lightning** (vLLM `--enable-lora`, one L40S) because LoRA *inference* is gated on our Nebius tier. Both with open models, ~4 GPU-credits total.
+> **Infra note:** the validated weights axis ran **entirely on one Lightning L40S** — QLoRA fine-tune → vLLM `--enable-lora` serving → eval, ~4 GPU-credits total. (We *also* fine-tuned via Nebius's API earlier, but that tier gates LoRA serving, so the served, validated run is on Lightning.)
 
 ## The "so what"
 - **Two orthogonal, composable levers of self-improvement** on one task: SIA improves the *scaffold*; fine-tuning improves the *model*. (Mirrors the SIA paper's "harness update" and "weight update" results.)
@@ -39,7 +39,7 @@ Same task, we **LoRA fine-tuned a model and served base vs tuned on one endpoint
 
 ## Honest status (what's real vs. caveated)
 - ✅ **Both axes validated on real served ±10% accuracy** — harness (44→65%) and weights (45→66.7%). End-to-end SIA loop on Nebius + served eval on Lightning.
-- ⚠️ **Split infra by necessity:** LoRA *inference serving* is gated on our Nebius tier (deploy + weight-export both return "AccessDenied" / empty support list), so we fine-tuned on Nebius but served on Lightning. One Nebius support toggle would collapse it to a single provider.
+- ✅ **Weights axis is fully self-contained on Lightning** (train + serve + eval on one L40S). Nebius's roles are the SIA meta/feedback *engine* (GLM-5, free OSS inference) and an earlier fine-tune whose *serving* was gated (deploy + weight-export both `AccessDenied`) — neither touches the validated accuracy.
 - ⚠️ Harness and weights were measured on **different base models** (gpt-oss-120b vs Qwen3-14B) — each axis is internally controlled (same model, before/after), but the two aren't yet on one shared base. The Lightning bundle can run the harness on the tuned model for the fully-shared 2×2.
 - 🛠️ Gotchas we solved live: SSL certs; meta token-budget blowups; feedback-context overflow (right-sized data); meta tool-call reliability (**GLM-5** is the dependable meta engine); numpy/pandas ABI clash on the GPU box; Qwen3 `<think>` tokens in serving.
 

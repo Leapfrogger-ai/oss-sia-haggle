@@ -63,7 +63,7 @@ s.addText("VALIDATED (served)", { x: 7.4, y: 4.65, w: 5, h: 0.35, fontFace: BF, 
 s.addText(
   [{ text: "Loss dropping is necessary, not sufficient — so we served it and measured. ", options: {} },
    { text: "Base 45% → fine-tuned 66.7% (+21.7 pts)", options: { bold: true } },
-   { text: ", same prompt, same eval set, identical 14B weights ± the LoRA adapter. Nebius trains, Lightning serves — loop closed.", options: {} }],
+   { text: ", same prompt, same eval set, identical 14B weights ± the LoRA adapter. Trained + served on one Lightning L40S — loop closed.", options: {} }],
   { x: 7.4, y: 5.05, w: 5.05, h: 1.65, fontFace: BF, fontSize: 14, color: "1B3B2A", lineSpacingMultiple: 1.12, valign: "top", margin: 0 });
 
 // ---------- Slide 4: why it matters (dark) ----------
@@ -73,8 +73,8 @@ s.addText("Why it matters", { x: 0.8, y: 0.5, w: 11, h: 0.8, fontFace: HF, fontS
 const pts = [
   ["Real B2B pain", GREEN, "Deal-outcome prediction & forecasting — only 45% of sales leaders trust their forecasts. Negotiation is the core sales skill. Real data, un-gameable ±10% metric."],
   ["Two composable levers", BLUE, "SIA improves the scaffold (code/prompt); fine-tuning improves the weights. Orthogonal and stackable on the same task."],
-  ["Open models, one Nebius key", GREEN, "Inference AND GPU fine-tuning through a single API key — no proprietary frontier model needed for the target. Reproducible and cheap."],
-  ["Both axes validated", GREEN, "Harness 44→65% (code/prompt) AND weights 45→66.7% (served LoRA) — both real ±10% accuracy on held-out negotiations. Nebius trains, Lightning serves."],
+  ["Open models, no frontier dependency", GREEN, "Free Nebius OSS inference drives the SIA engine; one Lightning L40S does the fine-tune + serving. No proprietary model needed — reproducible and cheap."],
+  ["Both axes validated", GREEN, "Harness 44→65% (code/prompt) AND weights 45→66.7% (served LoRA) — both real ±10% accuracy on held-out negotiations, all on open models."],
 ];
 let y = 1.7;
 for (const [h, c, body] of pts) {

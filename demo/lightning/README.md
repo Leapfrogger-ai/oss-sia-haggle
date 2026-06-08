@@ -66,6 +66,20 @@ on the same 60 negotiations** — only "adapter on/off" and "seed vs SIA-evolved
 > if it's ~25% (the no-deal floor) the target hit `<think>` again; confirm `serve.sh` is up and
 > the env vars are exported in the SIA-venv shell.
 
+### Variant — run the harness fully on-box (no Nebius key at all)
+The meta agent above runs on Nebius (GLM-5). To drop Nebius entirely, run the meta on the
+*same local 14B*. Restart serving with tool-calling enabled, then point the meta at it:
+```bash
+SERVE_TOOLS=1 nohup bash demo/lightning/serve.sh > serve.log 2>&1 &   # adds tool-calling
+export LOCAL_API_KEY="dummy"  NEBIUS_API_KEY="dummy"  NEBIUS_BASE_URL="http://localhost:8000/v1"
+SIA_TARGET_MODEL="Qwen/Qwen3-14B" sia run --task_dir ./tasks/craigslist-bargains \
+  --meta-agent-profile qwen14b-local-meta --target-agent-profile qwen14b-local-target \
+  --max_gen 1 --run_id 90 --no-web      # ← TEST with max_gen 1 first
+```
+⚠️ Qwen3-14B is a weaker code-writer than GLM-5 — the meta may flake (no `target_agent.py`
+written) or improve less. Confirm `runs/run_90/gen_1/target_agent.py` exists before committing
+to full runs. If it flakes, use the GLM-5/Nebius meta above (free during the event, reliable).
+
 ## Optional — live haggle demo
 ```bash
 curl -s localhost:8000/v1/chat/completions -H 'content-type: application/json' -d '{

@@ -1,0 +1,7 @@
+{
+  "provider_id": "local-vllm",
+  "name": "Local vLLM (this machine, OpenAI-compatible)",
+  "client_kind": "openai",
+  "base_url": "http://localhost:8000/v1",
+  "api_key_env": "LOCAL_API_KEY"
+}
