@@ -54,7 +54,7 @@ s.addImage({ path: img("5_weights_served.png"), x: 0.6, y: 1.5, w: 6.3, h: 4.62 
 const bullets = [
   { text: "Served the base AND the LoRA-tuned model on ONE vLLM endpoint, scored with the same seed prompt on the same 60 held-out negotiations.", options: { bullet: { code: "2022" }, color: "20242E" } },
   { text: "Exactly one variable changes: the LoRA adapter (identical Qwen3-14B weights, base vs base+adapter).", options: { bullet: { code: "2022" }, color: "20242E" } },
-  { text: "→ the +21.7 pts is attributable solely to the fine-tune. (Corroborated by training loss dropping 0.69 → 0.375 — but the headline is served accuracy, not loss.)", options: { bullet: { code: "2022" }, color: "20242E", bold: true } },
+  { text: "→ the +21.7 pts is attributable solely to the fine-tune. (The fine-tune's own training loss fell to ~0.1 on the same L40S — but the headline is served accuracy, not loss.)", options: { bullet: { code: "2022" }, color: "20242E", bold: true } },
 ];
 s.addText(bullets, { x: 7.15, y: 1.55, w: 5.55, h: 2.7, fontFace: BF, fontSize: 14.5, lineSpacingMultiple: 1.08, paraSpaceAfter: 10, valign: "top" });
 // implication box
