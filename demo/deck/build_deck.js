@@ -43,13 +43,13 @@ function card(x, tag, tagColor, big, sub) {
   s.addText(sub, { x: x + 0.3, y: 2.55, w: 5.5, h: 0.45, fontFace: BF, fontSize: 12.5, color: MUTE, margin: 0 });
 }
 card(0.6, "AXIS 1 · HARNESS  (code / prompt)", GREEN, "44%  →  65%", "SIA rewrote the agent each generation — no human in the loop.");
-card(6.78, "AXIS 2 · WEIGHTS  (LoRA fine-tune)", BLUE, "loss 0.69 → 0.375", "Llama-3.3-70B tuned on Nebius GPUs — same API key.");
-s.addImage({ path: img("3_two_axes_summary.png"), x: 1.66, y: 3.35, w: 10.0, h: 3.7 });
+card(6.78, "AXIS 2 · WEIGHTS  (LoRA fine-tune, served)", BLUE, "45% → 66.7%", "Qwen3-14B fine-tuned + served — +21.7 pts (beats base 70B).");
+s.addImage({ path: img("4_two_axes_validated.png"), x: 1.66, y: 3.35, w: 10.0, h: 3.7 });
 
 // ---------- Slide 3: what the loss means (light) ----------
 s = p.addSlide();
 s.background = { color: LIGHT };
-s.addText("What the LoRA loss means — and the implication", { x: 0.6, y: 0.35, w: 12.1, h: 0.7, fontFace: HF, fontSize: 30, bold: true, color: INK });
+s.addText("Weights axis — it learned, and it translated to accuracy", { x: 0.6, y: 0.35, w: 12.1, h: 0.7, fontFace: HF, fontSize: 30, bold: true, color: INK });
 s.addImage({ path: img("2_weights_losscurve.png"), x: 0.6, y: 1.45, w: 6.3, h: 3.94 });
 const bullets = [
   { text: "Per-token cross-entropy on the predicted price — how “surprised” the model is by the correct settled price. Lower = more probability on the right answer.", options: { bullet: { code: "2022" }, color: "20242E" } },
@@ -59,11 +59,11 @@ const bullets = [
 s.addText(bullets, { x: 7.15, y: 1.55, w: 5.55, h: 2.7, fontFace: BF, fontSize: 14.5, lineSpacingMultiple: 1.08, paraSpaceAfter: 10, valign: "top" });
 // implication box
 s.addShape(p.ShapeType.roundRect, { x: 7.15, y: 4.5, w: 5.55, h: 2.35, fill: { color: "ECF7F0" }, line: { color: GREEN, width: 1.25 }, rectRadius: 0.06 });
-s.addText("IMPLICATION", { x: 7.4, y: 4.65, w: 5, h: 0.35, fontFace: BF, fontSize: 12, bold: true, color: GREEN, margin: 0 });
+s.addText("VALIDATED (served)", { x: 7.4, y: 4.65, w: 5, h: 0.35, fontFace: BF, fontSize: 12, bold: true, color: GREEN, margin: 0 });
 s.addText(
-  [{ text: "The model itself got better at the task — a second, composable axis of self-improvement beyond prompt/code. ", options: {} },
-   { text: "Lower held-out loss ⇒ higher expected served ±10% accuracy", options: { bold: true } },
-   { text: " (live serving is one Nebius account toggle away).", options: {} }],
+  [{ text: "Loss dropping is necessary, not sufficient — so we served it and measured. ", options: {} },
+   { text: "Base 45% → fine-tuned 66.7% (+21.7 pts)", options: { bold: true } },
+   { text: ", same prompt & eval set. The tuned 14B even beats the base 70B. Nebius trains, Lightning serves — loop closed.", options: {} }],
   { x: 7.4, y: 5.05, w: 5.05, h: 1.65, fontFace: BF, fontSize: 14, color: "1B3B2A", lineSpacingMultiple: 1.12, valign: "top", margin: 0 });
 
 // ---------- Slide 4: why it matters (dark) ----------
@@ -74,7 +74,7 @@ const pts = [
   ["Real B2B pain", GREEN, "Deal-outcome prediction & forecasting — only 45% of sales leaders trust their forecasts. Negotiation is the core sales skill. Real data, un-gameable ±10% metric."],
   ["Two composable levers", BLUE, "SIA improves the scaffold (code/prompt); fine-tuning improves the weights. Orthogonal and stackable on the same task."],
   ["Open models, one Nebius key", GREEN, "Inference AND GPU fine-tuning through a single API key — no proprietary frontier model needed for the target. Reproducible and cheap."],
-  ["Honest status", BLUE, "Harness curve + LoRA training curve are live; served base-vs-tuned accuracy is one support toggle (LoRA inference) away from the full 2×2."],
+  ["Both axes validated", GREEN, "Harness 44→65% (code/prompt) AND weights 45→66.7% (served LoRA) — both real ±10% accuracy on held-out negotiations. Nebius trains, Lightning serves."],
 ];
 let y = 1.7;
 for (const [h, c, body] of pts) {

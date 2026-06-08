@@ -1,6 +1,6 @@
-# SIA × Nebius — "Haggle": a self-improving negotiation-outcome agent
+# SIA × Nebius × Lightning — "Haggle": a self-improving negotiation-outcome agent
 
-**One-liner:** We took a hard, real B2B negotiation task and let **SIA improve an AI agent on two axes — its harness (code/prompt) *and* its model weights — entirely on Nebius, with one API key for both inference and fine-tuning.**
+**One-liner:** We took a hard, real B2B negotiation task and let **SIA improve an AI agent on two axes — its harness (code/prompt) *and* its model weights — on open models**, and validated *both* on real served ±10% accuracy: **harness 44→65%, weights 45→66.7%.**
 
 ---
 
@@ -19,15 +19,18 @@ SIA's `meta → run → score → feedback` loop **rewrites the agent's code/pro
 
 **44% naive → 65% in 4 generations** (+21 pts vs naive, +12 vs its own gen 1). **No human touched the agent** — SIA read its own failure logs, diagnosed a *pathological NO_DEAL bias*, and fixed it in code. The gen-2 dip → recovery is honest exploration, not a scripted line.
 
-## Axis 2 — Weight self-improvement (LoRA fine-tune on Nebius) → `2_weights_losscurve.png`
-Same task, we **LoRA fine-tuned Llama-3.3-70B on Nebius GPUs** (same `NEBIUS_API_KEY`):
+## Axis 2 — Weight self-improvement (LoRA fine-tune, **served & validated**) → `4_two_axes_validated.png`
+Same task, we **LoRA fine-tuned a model and served base vs tuned on one endpoint**, then scored both with the same seed prompt on the same 60-item held-out set:
 
-| step | 13 | 26 | 39 |
+| | Base | Fine-tuned (LoRA) | Δ |
 |---|---|---|---|
-| valid loss | 0.69 | 0.42 | **0.375** |
-| train loss | 0.82 | 0.42 | **0.30** |
+| **±10% accuracy (served)** | 45.0% | **66.7%** | **+21.7 pts** |
 
-2.5M training tokens; the model demonstrably learned the task's price priors and output format.
+- The fine-tuned **14B beats the *base* 70B (53.3%)** — a small tuned model outran one 5× its size, and it edges the harness-improved gpt-oss (65%). On this task, **weights is the single strongest lever.**
+- Corroborated by the training curve (valid loss 0.69→0.375, train 0.82→0.30 over 2.5M tokens) — but the headline is the *served accuracy*, not the loss.
+- **Where it wins:** the base model over-predicts `NO_DEAL`; the fine-tune recovers deal-price accuracy (e.g. base says `NO_DEAL`, tuned predicts the actual settled price).
+
+> **Infra note:** training ran on **Nebius** (Token Factory fine-tuning API); serving ran on **Lightning** (vLLM `--enable-lora`, one L40S) because LoRA *inference* is gated on our Nebius tier. Both with open models, ~4 GPU-credits total.
 
 ## The "so what"
 - **Two orthogonal, composable levers of self-improvement** on one task: SIA improves the *scaffold*; fine-tuning improves the *model*. (Mirrors the SIA paper's "harness update" and "weight update" results.)
@@ -35,9 +38,10 @@ Same task, we **LoRA fine-tuned Llama-3.3-70B on Nebius GPUs** (same `NEBIUS_API
 - **Real metric, real data.** Un-gameable ±10% scoring on real negotiations.
 
 ## Honest status (what's real vs. caveated)
-- ✅ End-to-end SIA loop on Nebius; the harness hill-climb; the LoRA training curve; one-key inference + training.
-- ⚠️ **LoRA *inference serving* is currently disabled on our Nebius account** (API returns an empty supported-model list → "contact support"). So we present the weights axis via the **training curve**, not yet a served base-vs-tuned accuracy delta. We're **one support toggle** from the full 2×2 (base 70B already measured at 53.3% — the tuned cell drops in the moment serving is enabled).
-- 🛠️ Gotchas we solved live: macOS SSL certs; meta-agent token-budget blowups (reasoning models); feedback-context overflow (right-sized the data); **meta tool-call reliability — GLM-5 is the dependable Nebius meta engine** (Kimi/Qwen were flaky).
+- ✅ **Both axes validated on real served ±10% accuracy** — harness (44→65%) and weights (45→66.7%). End-to-end SIA loop on Nebius + served eval on Lightning.
+- ⚠️ **Split infra by necessity:** LoRA *inference serving* is gated on our Nebius tier (deploy + weight-export both return "AccessDenied" / empty support list), so we fine-tuned on Nebius but served on Lightning. One Nebius support toggle would collapse it to a single provider.
+- ⚠️ Harness and weights were measured on **different base models** (gpt-oss-120b vs Qwen3-14B) — each axis is internally controlled (same model, before/after), but the two aren't yet on one shared base. The Lightning bundle can run the harness on the tuned model for the fully-shared 2×2.
+- 🛠️ Gotchas we solved live: SSL certs; meta token-budget blowups; feedback-context overflow (right-sized data); meta tool-call reliability (**GLM-5** is the dependable meta engine); numpy/pandas ABI clash on the GPU box; Qwen3 `<think>` tokens in serving.
 
 ## Reproduce
 ```bash
