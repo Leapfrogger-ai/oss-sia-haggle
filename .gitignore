@@ -27,3 +27,15 @@ venv/
 .claude/
 .idea/
 .vscode/
+
+# generated SFT data (derived from non-redistributable dataset)
+tasks/craigslist-bargains/finetune/
+
+# experimentation scratch
+runs_*.log
+node_modules/
+demo/adapter_qwen14b/
+demo/lightning/runs/
+demo/*.pdf
+demo/slide-*.jpg
+demo/_unpack/

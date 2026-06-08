@@ -1,0 +1,7 @@
+{
+  "profile_id": "glm-meta",
+  "name": "GLM-5 on Nebius (pydantic-ai meta/feedback)",
+  "agent_impl": "pydantic-ai",
+  "model": "zai-org/GLM-5",
+  "provider_id": "nebius"
+}

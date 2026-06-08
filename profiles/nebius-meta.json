@@ -1,7 +1,7 @@
 {
   "profile_id": "nebius-meta",
-  "name": "Kimi K2.6 on Nebius (pydantic-ai meta/feedback)",
+  "name": "Kimi K2.5 on Nebius (pydantic-ai meta/feedback)",
   "agent_impl": "pydantic-ai",
-  "model": "moonshotai/Kimi-K2.6",
+  "model": "moonshotai/Kimi-K2.5",
   "provider_id": "nebius"
 }

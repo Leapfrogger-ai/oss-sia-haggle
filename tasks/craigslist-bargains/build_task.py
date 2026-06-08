@@ -40,8 +40,11 @@ CODALAB_URLS = {
 }
 
 TRUNCATE_LAST_N_TURNS = 2          # remove the closing agreement/acceptance
-TRAIN_DEMO_CAP = 1000              # stratified sample of train kept as public demos
-VALIDATION_LOOP_SIZE = 150         # stratified per-generation eval set (cost control)
+TRAIN_DEMO_CAP = 120               # stratified sample of train kept as public demos
+                                   # (kept small: the meta/feedback agent has bash+read_file
+                                   #  and can ingest this file — 1000 rows ≈ 265K tokens
+                                   #  overflows a 262K-context model)
+VALIDATION_LOOP_SIZE = 60          # stratified per-generation eval set (cost + context control)
 SEED = 42
 NO_DEAL = "NO_DEAL"
 
@@ -241,11 +244,14 @@ def main() -> None:
                                    "answer": r["label"]["answer"],
                                    "provenance": r["provenance"]} for r in recs}
 
+    # Only the loop-subset labels are needed for per-generation scoring. Writing just
+    # these (not all 597) keeps the private file small so a stray read by the
+    # meta/feedback agent can't overflow context — and shrinks the answer-key surface.
     (private / "validation_labels.json").write_text(
-        json.dumps(labels_blob(parsed["validation"]), ensure_ascii=False, indent=2), encoding="utf-8")
+        json.dumps(labels_blob(val_loop), ensure_ascii=False, indent=2), encoding="utf-8")
     (private / "test_labels.json").write_text(
         json.dumps(labels_blob(parsed["test"]), ensure_ascii=False, indent=2), encoding="utf-8")
-    print(f"  → private/validation_labels.json: {len(parsed['validation'])} labels")
+    print(f"  → private/validation_labels.json: {len(val_loop)} labels (loop subset)")
     print(f"  → private/test_labels.json: {len(parsed['test'])} labels")
 
     # truncated test inputs, shaped as a dataset_dir for the final eval run

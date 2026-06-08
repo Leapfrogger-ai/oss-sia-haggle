@@ -1,0 +1,7 @@
+{
+  "profile_id": "llama70b-nebius-target",
+  "name": "Llama-3.3-70B-Instruct on Nebius (target)",
+  "model": "meta-llama/Llama-3.3-70B-Instruct",
+  "provider_id": "nebius",
+  "agent_reference": "default"
+}
