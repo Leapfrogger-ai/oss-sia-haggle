@@ -1,0 +1,7 @@
+{
+  "profile_id": "qwen14b-tuned-local-target",
+  "name": "Qwen3-14B + LoRA adapter 'haggle' via local vLLM (target)",
+  "model": "haggle",
+  "provider_id": "nebius",
+  "agent_reference": "default"
+}
